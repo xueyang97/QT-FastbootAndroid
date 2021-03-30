@@ -14,29 +14,42 @@ public:
     enum HttpError {
         NoError = 0,
         DownloadFileNotOpen = 500,    //需要下载的文件未打开
+        UploadFileNotOpen,    //上传的文件不存在
     };
     Q_ENUM(HttpError)
 
     HttpCommunication();
     ~HttpCommunication();
-
     void httpDownload(QString urlSpec, QString fileName);
-    HttpError getError();
+    void httpUpload(QString fileName, QString urlSpec);
+    qint64 uploadMaximum(void);
+    qint64 uploadValue(void);
 
 private slots :
     void on_httpReadyRead();
-    void on_httpFinished();
+    void on_downloadFinished();
+    void on_uploadFinished();
     void on_downloadProgress(qint64 progressMaximum, qint64 progressValue);
+    void on_uploadProgress(qint64 progressMaximum, qint64 progressValue);
     void on_error(QNetworkReply::NetworkError networkError);
 
 private:
-    QNetworkAccessManager *manager;
+    QNetworkAccessManager *accessManager1;
+    QNetworkAccessManager *accessManager2;
+    QNetworkAccessManager *accessManager;
     QNetworkReply *reply;
     QFile *file;
 
+    qint64 downloadProgressMaximum;
+    qint64 downloadProgressValue;
+    qint64 uploadProgressMaximum;
+    qint64 uploadProgressValue;
+
 signals :
     void downloadProgress(qint64 progressMaximum, qint64 progressValue);
+    void uploadProgress(qint64 progressMaximum, qint64 progressValue);
     void downloadFinished();
+    void uploadFinished();
     void httpError(QNetworkReply::NetworkError networkError, HttpCommunication::HttpError http_error);
 };
 

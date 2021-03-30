@@ -8,9 +8,16 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     http = new HttpCommunication();
+
     connect(http,SIGNAL(downloadProgress(qint64,qint64)),
             this,SLOT(updateDataReadProgress(qint64,qint64)));
+
+    connect(http,SIGNAL(uploadProgress(qint64,qint64)),
+            this,SLOT(updateDataWritedProgress(qint64,qint64)));
+
     connect(http,SIGNAL(downloadFinished()),this,SLOT(httpFinished()));
+    connect(http,SIGNAL(uploadFinished()),this,SLOT(on_uploadFinished()));
+
     connect(http,SIGNAL(httpError(QNetworkReply::NetworkError,HttpCommunication::HttpError)),
             this,SLOT(on_httpError(QNetworkReply::NetworkError,HttpCommunication::HttpError)));
 
@@ -33,8 +40,9 @@ void MainWindow::showPicture(QString fileName)
 
 void MainWindow::on_pushButtonLoad_clicked()
 {
-    http->httpDownload("http://localhost:8080/xueyang/123.jpg", "123.jpg");
-    // showPicture("123.jpg");
+    http->httpDownload("http://localhost/phpbin/upload", "123.jpg");
+
+
 //    QString urlSpec = ui->lineEditURL->text();
 //    url.setUrl(urlSpec);
 //    QFileInfo info(url.path());//获取文件夹的绝对路径
@@ -64,7 +72,13 @@ void MainWindow::on_pushButtonLoad_clicked()
 }
 
 void MainWindow::updateDataReadProgress(qint64 a,qint64 b)
-{//更新进度条
+{
+    ui->progressBar->setMaximum(b);
+    ui->progressBar->setValue(a);
+}
+
+void MainWindow::updateDataWritedProgress(qint64 a,qint64 b)
+{
     ui->progressBar->setMaximum(b);
     ui->progressBar->setValue(a);
 }
@@ -74,7 +88,20 @@ void MainWindow::httpFinished()
     showPicture("123.jpg");
 }
 
+void MainWindow::on_uploadFinished()
+{
+    ui->progressBar->setMaximum(1);
+    ui->progressBar->setValue(1);
+    QMessageBox::information(this,"提示","文件已上传");
+    // showPicture("123.jpg");
+}
+
 void MainWindow::on_httpError(QNetworkReply::NetworkError networkError, HttpCommunication::HttpError http_error)
 {
     qDebug() << "networkError : " << QString::number(networkError) << "\nhttpError : " << QString::number(http_error);
+}
+
+void MainWindow::on_pushButtonExit_clicked()
+{
+    http->httpUpload("123.jpg", "http://localhost/phpbin/upload");
 }

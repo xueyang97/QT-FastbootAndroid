@@ -60,7 +60,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>退出</string>
+     <string>上传</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButtonLoad">

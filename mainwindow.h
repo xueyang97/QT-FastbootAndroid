@@ -2,13 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QUrl>
-#include <QFileInfo>
 #include <QDebug>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
 #include <QMovie>
-#include <QThread>
 #include <QMessageBox>
 #include "httpcommunication.h"
 
@@ -28,17 +23,16 @@ public:
 
 private slots:
     void updateDataReadProgress(qint64 a,qint64 b);
+    void updateDataWritedProgress(qint64 a,qint64 b);
     void on_pushButtonLoad_clicked();
     void httpFinished();
+    void on_uploadFinished();
     void on_httpError(QNetworkReply::NetworkError, HttpCommunication::HttpError);
+
+    void on_pushButtonExit_clicked();
 
 private:
     Ui::MainWindow *ui;
     HttpCommunication *http;
-//    QFile *file;
-//    QNetworkAccessManager *manager;
-//    QNetworkReply *reply;
-//    QByteArray temp;
-//    QUrl url;
 };
 #endif // MAINWINDOW_H
