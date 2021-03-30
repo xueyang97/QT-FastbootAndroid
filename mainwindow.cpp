@@ -19,7 +19,6 @@ MainWindow::~MainWindow()
 void MainWindow::startRequest(QUrl url)
 {
     reply = manager->get(QNetworkRequest(url));//当服务器接收到请求后
-    // connect(reply,SIGNAL(finished()),this,SLOT(replyFinished(QNetworkReplty *)));//显示图片
     connect(reply,SIGNAL(readyRead()),this,SLOT(httpReadyRead()));//服务器响应请求后，开始下载内容
     connect(reply,SIGNAL(finished()),this,SLOT(httpFinished()));//下载完成后，关闭文件
     connect(reply,SIGNAL(downloadProgress(qint64,qint64)),this,SLOT(updateDataReadProgress(qint64,qint64)));//更新进度条
@@ -67,7 +66,7 @@ void MainWindow::on_pushButtonLoad_clicked()
     startRequest(url);//发送请求
 
     ui->progressBar->setValue(0);//将进度条的值设置为0
-//    ui->progressBar->show();//显示进度条
+    ui->pushButtonLoad->setEnabled(false);
 }
 
 void MainWindow::updateDataReadProgress(qint64 a,qint64 b)
@@ -97,6 +96,8 @@ void MainWindow::httpFinished()
     reply->deleteLater();
     delete file;
     file  =0;
+
+    ui->pushButtonLoad->setEnabled(true);
 }
 
 void MainWindow::replyFinished(QNetworkReply *reply)
