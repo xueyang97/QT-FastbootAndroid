@@ -77,7 +77,7 @@ void MainWindow::updateDataReadProgress(qint64 a,qint64 b)
     ui->progressBar->setValue(a);
 }
 
-void MainWindow::updateDataWritedProgress(qint64 a,qint64 b)
+void MainWindow::updateDataWritedProgress(qint64 b,qint64 a)
 {
     ui->progressBar->setMaximum(b);
     ui->progressBar->setValue(a);

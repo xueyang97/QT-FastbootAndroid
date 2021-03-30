@@ -110,7 +110,7 @@ void HttpCommunication::on_downloadProgress(qint64 progressMaximum, qint64 progr
     emit downloadProgress(progressMaximum, progressValue);
 }
 
-void HttpCommunication::on_uploadProgress(qint64 progressMaximum, qint64 progressValue)
+void HttpCommunication::on_uploadProgress(qint64 progressValue, qint64 progressMaximum)
 {
     uploadProgressMaximum = progressMaximum;
     uploadProgressValue = progressValue;

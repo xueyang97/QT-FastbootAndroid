@@ -47,7 +47,7 @@ private:
 
 signals :
     void downloadProgress(qint64 progressMaximum, qint64 progressValue);
-    void uploadProgress(qint64 progressMaximum, qint64 progressValue);
+    void uploadProgress(qint64 progressValue, qint64 progressMaximum);
     void downloadFinished();
     void uploadFinished();
     void httpError(QNetworkReply::NetworkError networkError, HttpCommunication::HttpError http_error);
