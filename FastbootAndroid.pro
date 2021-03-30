@@ -1,4 +1,7 @@
 QT       += core gui
+QT       += network
+QT       += gui
+QT       += widgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -17,6 +20,8 @@ HEADERS += \
 
 FORMS += \
     mainwindow.ui
+
+QMAKE_CXXFLAGS += /utf-8
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
