@@ -6,7 +6,14 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    manager = new QNetworkAccessManager(this);
+
+    http = new HttpCommunication();
+    connect(http,SIGNAL(downloadProgress(qint64,qint64)),
+            this,SLOT(updateDataReadProgress(qint64,qint64)));
+    connect(http,SIGNAL(downloadFinished()),this,SLOT(httpFinished()));
+    connect(http,SIGNAL(httpError(QNetworkReply::NetworkError,HttpCommunication::HttpError)),
+            this,SLOT(on_httpError(QNetworkReply::NetworkError,HttpCommunication::HttpError)));
+
     ui->progressBar->setValue(0);//将进度条的值设置为0
     ui->progressBar->show();//显示进度条
 }
@@ -16,57 +23,44 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::startRequest(QUrl url)
+void MainWindow::showPicture(QString fileName)
 {
-    reply = manager->get(QNetworkRequest(url));//当服务器接收到请求后
-    connect(reply,SIGNAL(readyRead()),this,SLOT(httpReadyRead()));//服务器响应请求后，开始下载内容
-    connect(reply,SIGNAL(finished()),this,SLOT(httpFinished()));//下载完成后，关闭文件
-    connect(reply,SIGNAL(downloadProgress(qint64,qint64)),this,SLOT(updateDataReadProgress(qint64,qint64)));//更新进度条
+    QMovie *mov = new QMovie(fileName);
+    mov->setScaledSize(ui->labelShow->size());//自适应label的大小
+    ui->labelShow->setMovie(mov);
+    mov->start();
 }
-
-
-
-
-
 
 void MainWindow::on_pushButtonLoad_clicked()
 {
-    QString urlSpec = ui->lineEditURL->text();
-    url.setUrl(urlSpec);
-    QFileInfo info(url.path());//获取文件夹的绝对路径
-    qDebug() << url.path();
-    QString fn(info.fileName());//获取需要下载文件的文件名
-    if (fn.isEmpty()) {
-        qDebug() << QMessageBox::information(this,"错误","请指定需要下载的文件URL");
-        return;
-    }
-    file = new QFile(fn);//生成一个相同文件名的文件夹，用来存放下载的内容
-    if (file->exists()) {   //文件已经存在删除文件
-        QMessageBox::StandardButton MessageBoReturn;
-        MessageBoReturn = QMessageBox::information(this,"提示","下载文件已存在，是否覆盖文件", QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-        if (MessageBoReturn == QMessageBox::Yes) {
-            file->remove();
-        }
-        else {
-            /* 显示图片 */
-//            QMovie *mov = new QMovie(file->fileName());
-//            mov->setScaledSize(ui->labelShow->size());//自适应label的大小
-//            ui->labelShow->setMovie(mov);
-//            mov->start();
-//            delete mov;
-            return;
-        }
+    http->httpDownload("http://localhost:8080/xueyang/123.jpg", "123.jpg");
+    // showPicture("123.jpg");
+//    QString urlSpec = ui->lineEditURL->text();
+//    url.setUrl(urlSpec);
+//    QFileInfo info(url.path());//获取文件夹的绝对路径
+//    qDebug() << url.path();
+//    QString fn(info.fileName());//获取需要下载文件的文件名
+//    if (fn.isEmpty()) {
+//        qDebug() << QMessageBox::information(this,"错误","请指定需要下载的文件URL");
+//        return;
+//    }
+//    file = new QFile(fn);//生成一个相同文件名的文件夹，用来存放下载的内容
+//    if (file->exists()) {   //文件已经存在删除文件
+//        QMessageBox::StandardButton MessageBoReturn;
+//        MessageBoReturn = QMessageBox::information(this,"提示","下载文件已存在，是否覆盖文件", QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+//        if (MessageBoReturn == QMessageBox::Yes) {
+//            file->remove();
+//        }
+//        else {
+//            /* 显示图片 */
+//            return;
+//        }
 
-    }
+//    }
 
-    if (!file->open(QIODevice::ReadWrite)) {
-        qDebug() << "error";
-    }
-
-    startRequest(url);//发送请求
-
-    ui->progressBar->setValue(0);//将进度条的值设置为0
-    ui->pushButtonLoad->setEnabled(false);
+//    if (!file->open(QIODevice::ReadWrite)) {
+//        qDebug() << "error";
+//    }
 }
 
 void MainWindow::updateDataReadProgress(qint64 a,qint64 b)
@@ -75,35 +69,12 @@ void MainWindow::updateDataReadProgress(qint64 a,qint64 b)
     ui->progressBar->setValue(a);
 }
 
-void MainWindow::httpReadyRead(){
-    temp = reply->readAll();
-    if(file)
-        file->write(temp);//读取文件
-}
-
 void MainWindow::httpFinished()
 {
-    qDebug() << "文件下载结束";
-    /* 显示图片 */
-    QMovie *mov = new QMovie(file->fileName());
-    mov->setScaledSize(ui->labelShow->size());//自适应label的大小
-    ui->labelShow->setMovie(mov);
-    mov->start();
-
-    /* 关闭文件 */
-    file->flush();
-    file->close();
-    reply->deleteLater();
-    delete file;
-    file  =0;
-
-    ui->pushButtonLoad->setEnabled(true);
+    showPicture("123.jpg");
 }
 
-void MainWindow::replyFinished(QNetworkReply *reply)
+void MainWindow::on_httpError(QNetworkReply::NetworkError networkError, HttpCommunication::HttpError http_error)
 {
-    QMovie *mov = new QMovie(reply);
-    mov->setScaledSize(ui->labelShow->size());//自适应label的大小
-    ui->labelShow->setMovie(mov);
-    mov->start();
+    qDebug() << "networkError : " << QString::number(networkError) << "\nhttpError : " << QString::number(http_error);
 }

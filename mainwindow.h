@@ -10,6 +10,7 @@
 #include <QMovie>
 #include <QThread>
 #include <QMessageBox>
+#include "httpcommunication.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -23,20 +24,21 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void startRequest(QUrl url);
+    void showPicture(QString fileName);
 
 private slots:
     void updateDataReadProgress(qint64 a,qint64 b);
     void on_pushButtonLoad_clicked();
-    void httpReadyRead();
     void httpFinished();
-    void replyFinished(QNetworkReply *reply);
+    void on_httpError(QNetworkReply::NetworkError, HttpCommunication::HttpError);
 
 private:
     Ui::MainWindow *ui;
-    QNetworkAccessManager *manager;
-    QNetworkReply *reply;
-    QByteArray temp;
-    QUrl url;
-    QFile *file;
+    HttpCommunication *http;
+//    QFile *file;
+//    QNetworkAccessManager *manager;
+//    QNetworkReply *reply;
+//    QByteArray temp;
+//    QUrl url;
 };
 #endif // MAINWINDOW_H
