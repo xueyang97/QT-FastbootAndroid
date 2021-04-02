@@ -107,6 +107,7 @@ void HttpCommunication::on_downloadProgress(qint64 progressMaximum, qint64 progr
 {
     downloadProgressMaximum = progressMaximum;
     downloadProgressValue = progressValue;
+    qDebug()<<QString::number(progressValue)<< " / "<<QString::number(progressMaximum);
     emit downloadProgress(progressMaximum, progressValue);
 }
 
