@@ -251,18 +251,8 @@
       </rect>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
-     <item>
-      <property name="text">
-       <string>自定义模式</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Android Mode</string>
-      </property>
-     </item>
      <item>
       <property name="text">
        <string>Kernel Mode</string>
@@ -315,6 +305,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBoxCache">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>180</x>
@@ -328,6 +321,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBoxAboot">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>260</x>
@@ -339,8 +335,14 @@
      <property name="text">
       <string>aboot</string>
      </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QCheckBox" name="checkBoxBoot">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>330</x>
@@ -354,6 +356,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBoxPersit">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>180</x>
@@ -367,6 +372,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBoxRecovery">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>260</x>
@@ -380,6 +388,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBoxSystem">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>330</x>
@@ -393,6 +404,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBoxUserdata">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>180</x>
@@ -406,6 +420,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBoxDDR">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>260</x>
@@ -419,6 +436,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="checkBox">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>180</x>
@@ -461,6 +481,9 @@
      </property>
     </widget>
     <widget class="QComboBox" name="comboBoxSplash">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>240</x>

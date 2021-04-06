@@ -17,53 +17,31 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowFlags(windowFlags()& ~Qt::WindowMaximizeButtonHint);
     setFixedSize(this->width(), this->height());
 
-
-
     http = new HttpCommunication();
-    cmd = new QProcess(0);
+    adb = new AndroidDebugBridge(0);
+    fastboot = new Fastboot(0);
+
+    workUpdate = new WorkUpdate();
+    connect(workUpdate,SIGNAL(readyReadStandardOutput()),this,SLOT(on_workReadyReadStandardOutput()));
 
 
-    adb = new AndroidDebugBridge();
-    connect(adb, SIGNAL(adbFinished(int,QProcess::ExitStatus)),
-            this,SLOT(on_adbFinished(int,QProcess::ExitStatus)));
-    adbcmd = AndroidDebugBridge::NoCommand;
-    /* 先对CDM命令做一次解析，判断对应的指令是否可以正常执行 */
-    //    if (!adb->isAdbRun()) {
-    //        QMessageBox::information(this,"错误","无法执行adb命令，请检查相应设备");
-    //    }
-    /* 上电更新一次设备列表 */
-    // on_pushButton_clicked();
+//    qDebug() << "search adb devices :";
+//    const QStringList &adbDevice = adb->searchDevice();
+//    if (adbDevice.isEmpty() != true) {
+//        qDebug() << "adb reboot bootloader :";
+//        adb->entryBootloader(adbDevice.at(0));
+//        QThread::sleep(10);
+//    }
 
-    fastboot = new Fastboot();
-    connect(fastboot, SIGNAL(fastbootFinished(int,QProcess::ExitStatus)),
-            this,SLOT(on_fastbootFinished(int,QProcess::ExitStatus)));
+//    qDebug() << "search fastboot devices :";
+//    const QStringList &fastbootDevice = fastboot->searchDevice();
+//    if (fastbootDevice.isEmpty() != true) {
+//        qDebug() << "fastboot flash boot boot.img :";
+//        fastboot->flashBootDownload(fastbootDevice.at(0),"E:\\Android\\SW_8953_android9_V01_20210120_HbSdk_factory\\SW_8953_android9_V01_20210120_HbSdk_factory\\boot.img");
 
-
-
-
-//    /* 下载进度条 */
-//    connect(http,SIGNAL(downloadProgress(qint64,qint64)),
-//            this,SLOT(updateDataReadProgress(qint64,qint64)));
-//    /* 上传进度条 */
-//    connect(http,SIGNAL(uploadProgress(qint64,qint64)),
-//            this,SLOT(updateDataWritedProgress(qint64,qint64)));
-//    /* 下载完成和上传完成 */
-//    connect(http,SIGNAL(downloadFinished()),this,SLOT(httpFinished()));
-//    connect(http,SIGNAL(uploadFinished()),this,SLOT(on_uploadFinished()));
-
-//    connect(http,SIGNAL(httpError(QNetworkReply::NetworkError,HttpCommunication::HttpError)),
-//            this,SLOT(on_httpError(QNetworkReply::NetworkError,HttpCommunication::HttpError)));
-
-
-//    cmd->start("pwd");
-//    cmd->waitForStarted();
-//    cmd->waitForFinished();
-//    ui->textEditInformation->setText(cmd->readAllStandardOutput());
-
-    ui->progressBar->setValue(0);//将进度条的值设置为0
-    ui->progressBar->show();//显示进度条
-
-    // this->close();
+//        qDebug() << "fastboot reboot :";
+//        fastboot->fsatbootReboot(fastbootDevice.at(0));
+//    }
 
 }
 
@@ -71,55 +49,22 @@ MainWindow::~MainWindow()
 {
     delete ui;
     delete http;
-    delete cmd;
     delete adb;
 }
 
-void MainWindow::showPicture(QString fileName)
+void MainWindow::on_workReadyReadStandardOutput(void)
 {
-//    QMovie *mov = new QMovie(fileName);
-//    mov->setScaledSize(ui->pushButtonExit->size());//自适应label的大小
-//    ui->pushButtonExit->setMovie(mov);
-//    mov->start();
+    ui_editShowInfo(workUpdate->readAllStandardOutput());
 }
 
 void MainWindow::on_pushButtonLoad_clicked()
 {
     // http->httpDownload("http://localhost/phpbin/upload", "123.jpg");
-    // QProcess p(0);
-//    cmd->start("ping 192.168.1.31");
-//    connect(cmd,SIGNAL(readyReadStandardOutput()),this,SLOT(on_uploadFinished()));
-//    p.waitForStarted();
-//    p.waitForFinished();
-//    qDebug()<<"error = " << QString::number(p.error());
-//    ui->labelShow->setText(QString::fromLocal8Bit(p.readAllStandardOutput()));
-
-//    fileName = QFileDialog::getExistingDirectory(this, tr("选择文件夹"));
-//    ui->lineEditURL->setText(fileName);
-    ui->textEditInformation->insertPlainText(QString::fromLocal8Bit(cmd->readAllStandardOutput()));
-    ui->textEditInformation->insertPlainText(QString::fromLocal8Bit(cmd->readAllStandardError()));
 }
 
 void MainWindow::on_pushButtonExit_clicked()
 {
     // http->httpUpload("123.jpg", "http://localhost/phpbin/upload");
-
-//    cmd->start("pwd");
-//    cmd->waitForStarted();
-//    cmd->waitForFinished();
-//    qDebug()<<"error = " << QString::number(cmd->error());
-//    qDebug()<<QString::fromLocal8Bit(cmd->readAllStandardOutput());
-    //ui->textEditInformation->setText(QString::fromLocal8Bit(p.readAllStandardOutput()));
-//    a = 0;
-
-    fileName = "E:\\Android\\SW_SD5000_V028_A01S\\SW_SD5000_V028_A01S";
-    cmd->setWorkingDirectory(fileName);
-
-    cmd->start("E:\\Android\\SW_SD5000_V028_A01S\\SW_SD5000_V028_A01S\\download_kernel.cmd");
-//    a++;
-    connect(cmd,SIGNAL(readyReadStandardOutput()),this,SLOT(on_uploadFinished()));
-    connect(cmd,SIGNAL(readyReadStandardError()),this,SLOT(on_uploadFinished()));
-    connect(cmd,SIGNAL(finished(int)),this,SLOT(on_CmdFinished(int)));
 }
 
 void MainWindow::updateDataReadProgress(qint64 a,qint64 b)
@@ -136,13 +81,12 @@ void MainWindow::updateDataWritedProgress(qint64 b,qint64 a)
 
 void MainWindow::httpFinished()
 {
-    showPicture("123.jpg");
 }
 
 void MainWindow::on_uploadFinished()
 {
     // QMessageBox::information(this,"提示","文件已上传");
-    ui->textEditInformation->insertPlainText(QString::fromLocal8Bit(cmd->readAllStandardOutput()));
+    // ui->textEditInformation->insertPlainText(QString::fromLocal8Bit(cmd->readAllStandardOutput()));
     // ui->textEditInformation->insertPlainText(QString::fromLocal8Bit(cmd->readAllStandardError()));
 }
 
@@ -151,80 +95,91 @@ void MainWindow::on_httpError(QNetworkReply::NetworkError networkError, HttpComm
     qDebug() << "networkError : " << QString::number(networkError) << "\nhttpError : " << QString::number(http_error);
 }
 
+/**
+ * @brief MainWindow::on_pushButton_clicked adb搜索按钮按下事件处理
+ */
+void MainWindow::on_pushButton_clicked()
+{
+    ui_editShowClear();
+
+    ui_editShowInfo("搜索设备中...\n");
+    const QStringList &adbDevice = adb->searchDevice();
+    ui_editShowInfo("搜索完成 ");
+    if (adbDevice.isEmpty() == true) {
+        ui_editShowInfo("未搜索到设备\n");
+    } else {
+        ui_editShowInfo("搜索到的设备 :\t");
+        for (int i = 0; i < adbDevice.length(); i++) {
+            ui_editShowInfo(adbDevice.at(i));
+        }
+    }
+
+    ui->comboBoxDevice->clear();
+    if (adbDevice.isEmpty() == true) {
+        ui->comboBoxDevice->addItems(QStringList() << "no device");
+    } else {
+        ui->comboBoxDevice->addItems(adbDevice);
+    }
+}
+
+void MainWindow::on_pushButtonRun_clicked()
+{
+    ui_editShowClear();
+
+    if (ui->comboBoxDevice->currentText() == QString("no device")) {
+        ui_editShowInfo("未搜索到adb设备，请重新搜索设备\n");
+        return;
+    }
+
+    workUpdate->setADBDevice(ui->comboBoxDevice->currentText());
+    workUpdate->start();
+
+//    QString adbDevice = ui->comboBoxDevice->currentText();
+//    ui_editShowInfo("adb进入bootloader模式...\n");
+//    adb->entryBootloader(adbDevice);
+//    QThread::sleep(6);
+//    if (adb->adbError() != AndroidDebugBridge::NoError) {
+//        ui_editShowInfo(QString("adb进入bootloader失败 错误代码 : %1\n").arg(adb->adbError()));
+//        return;
+//    }
+//    ui_editShowInfo("adb进入bootloader模式成功\n");
+
+//    const QStringList &fastbootDeviceList = fastboot->searchDevice();
+//    if (fastbootDeviceList.isEmpty() == true) {
+//        ui_editShowInfo("未搜索到fastboot设备，fastboot下载失败\n");
+//        return;
+//    }
+//    QString fastbootDevice = fastbootDeviceList.at(0);
+
+//    ui_editShowInfo("正在升级boot分区...\n");
+//    fastboot->flashBootDownload(fastbootDevice,"E:\\Android\\SW_8953_android9_V01_20210120_HbSdk_factory\\SW_8953_android9_V01_20210120_HbSdk_factory\\boot.img");
+//    if (fastboot->fsatbootError() != Fastboot::NoError) {
+//        ui_editShowInfo(QString("fastboot升级boot分区失败 错误代码 : %1\n").arg(fastboot->fsatbootError()));
+//    }
+//    ui_editShowInfo(QString("fastboot升级boot分区成功\n"));
+
+//    ui_editShowInfo("正在重启设备...\n");
+//    fastboot->fsatbootReboot(fastbootDevice);
+//    if (fastboot->fsatbootError() != Fastboot::NoError) {
+//        ui_editShowInfo(QString("fastboot重启设备失败 错误代码 : %1\n").arg(fastboot->fsatbootError()));
+//    }
+//    ui_editShowInfo(QString("fastboot重启设备成功\n"));
+
+//    ui_editShowInfo(QString("fastboot设备升级成功\n"));
+}
+
+
+
+void MainWindow::ui_editShowInfo(const QString & info)
+{
+    ui->textEditInformation->insertPlainText(info);
+}
+void MainWindow::ui_editShowClear(void)
+{
+    ui->textEditInformation->clear();
+}
 void MainWindow::on_textEditInformation_textChanged()
 {
     ui->textEditInformation->moveCursor(QTextCursor::End);
 }
 
-void MainWindow::on_CmdFinished(int)
-{
-    qDebug() << QString("finished %1").arg(QString::number((a)));
-}
-
-void MainWindow::on_pushButton_clicked()
-{
-    ui->textEditInformation->clear();
-    adbcmd = AndroidDebugBridge::SearchDevice;
-    ui->textEditInformation->insertPlainText("正在扫描设备...\n");
-    ui->pushButton->setEnabled(false);
-    adb->searchDevice();
-//    connect(adb, SIGNAL(adbFinished(int,QProcess::ExitStatus)),
-//            this,SLOT(on_adbFinished(int,QProcess::ExitStatus)));
-}
-
-void MainWindow::on_pushButtonRun_clicked()
-{
-    ui->textEditInformation->clear();
-    if (ui->comboBoxDevice->currentText() == QString("no device")) {
-        ui->textEditInformation->insertPlainText("未检测出ADB设备，请重新扫描设备\n");
-        return;
-    }
-    ui->textEditInformation->insertPlainText("设备正在进入boot loader模式...\n");
-    adbcmd = AndroidDebugBridge::RebootBootloader;
-    adb->entryBootloader(ui->comboBoxDevice->currentText());
-//    connect(adb, SIGNAL(adbFinished(int,QProcess::ExitStatus)),
-//            this,SLOT(on_adbFinished(int,QProcess::ExitStatus)));
-}
-
-void MainWindow::on_adbFinished(int exitCode, QProcess::ExitStatus exitStatus)
-{
-    switch ((int)adbcmd) {
-    case AndroidDebugBridge::SearchDevice:
-        ui->textEditInformation->insertPlainText("扫描设备完成\n");
-        ui->pushButton->setEnabled(true);
-        ui->comboBoxDevice->clear();
-        ui->comboBoxDevice->addItems(adb->getDevicesList());
-        if (ui->comboBoxDevice->count() == 0) {
-            ui->comboBoxDevice->addItem("no device");
-        }
-    break;
-    case AndroidDebugBridge::RebootBootloader:
-        if ((exitCode == 0) && (exitStatus == QProcess::NormalExit)) {
-            if (adb->adbError()) {
-                ui->textEditInformation->insertPlainText(QString("设备进入boot loader模式失败 错误代码： %1\n").arg(adb->adbError()));
-                break;
-            }
-            ui->textEditInformation->insertPlainText("设备进入boot loader成功\n");
-            ui->textEditInformation->insertPlainText("正在重启设备...\n");
-            fastboot->fsatbootReboot();
-        } else {
-            ui->textEditInformation->insertPlainText("adb 命令进程异常退出\n");
-        }
-    break;
-    }
-    adbcmd = AndroidDebugBridge::NoCommand;
-}
-
-void MainWindow::on_fastbootFinished(int exitCode, QProcess::ExitStatus exitStatus)
-{
-    if ((exitCode == 0) && (exitStatus == QProcess::NormalExit)) {
-        if (!fastboot->fsatbootError()) {
-            ui->textEditInformation->insertPlainText("设备重启成功\n");
-        } else {
-            ui->textEditInformation->insertPlainText("设备重启失败\n");
-        }
-        ui->textEditInformation->insertPlainText("fast boot 设备升级完成\n");
-    } else {
-        ui->textEditInformation->insertPlainText("fastboot 命令进程异常退出\n");
-    }
-}

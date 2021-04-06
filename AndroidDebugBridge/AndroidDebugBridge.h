@@ -8,7 +8,6 @@ class AndroidDebugBridge : public QProcess
 {
     Q_OBJECT
 public:
-
     enum ADBCDM {
         NoCommand,
         SearchDevice,
@@ -20,37 +19,41 @@ public:
     enum ADBError {
         NoError,
         UnknownError,
-        DaemonError,    // cannot connect to daemon
-        NotFoundDevices, //没有找到设备
+        Timedout,           // 命令执行超时
+        FailedToStart,      // 命令未启动 可能没有找到 ADB 命令
+        UnknownCommand,     // 未知的 ADB 命令
+        DaemonError,        // cannot connect to daemon
+        NotFoundDevices,    // 没有找到设备
     };
     Q_ENUM(ADBError);
 
-    explicit AndroidDebugBridge(QObject *parent = nullptr);
+    explicit AndroidDebugBridge(QProcess *parent = nullptr);
     ~AndroidDebugBridge();
 
-    QString path(void);
-    void setPath(QString &path);
-    bool isAdbRun(void);
-    void searchDevice(void);
-    QStringList waitSearchDevice(void);
-    QStringList getDevicesList(void);
+    const QString &path(void);
+    void setPath(const QString &path);
 
-    bool entryBootloader(QString device);
+    bool isExecutable(void);
+
+    const QStringList &searchDevice(void);
+    const QStringList &getDevicesList(void);
+
+    void entryBootloader(const QString &device);
+
     AndroidDebugBridge::ADBError adbError(void);
-
-
-private slots:
-    void on_finshed(int exitCode, QProcess::ExitStatus exitStatus);
 
 private:
     QString     executionPath;      /*!< adb.exe 程序执行路径 */
-    QProcess    *adbcmd;
     QStringList devicesList;        /*!< adb 设备列表 */
     ADBError    adberror;
-    ADBCDM      ststus;
 
-signals:
-    void adbFinished(int exitCode, QProcess::ExitStatus exitStatus);                        /* 搜索设备完成信号 */
+    int exitCode;
+    QProcess::ExitStatus exitStatus;
+    QString readAllOutput;
+    QString readAllError;
+
+    void adbDebug(void);
+    void errorAnalysis(void);
 
 };
 

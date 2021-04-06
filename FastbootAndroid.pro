@@ -16,13 +16,15 @@ SOURCES += \
     Fastboot/Fastboot.cpp \
     httpcommunication.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    workupdate.cpp
 
 HEADERS += \
     AndroidDebugBridge/AndroidDebugBridge.h \
     Fastboot/Fastboot.h \
     httpcommunication.h \
-    mainwindow.h
+    mainwindow.h \
+    workupdate.h
 
 FORMS += \
     mainwindow.ui

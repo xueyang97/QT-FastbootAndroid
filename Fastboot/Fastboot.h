@@ -2,8 +2,8 @@
 #define FASTBOOT_H
 
 #include <QProcess>
-#include <QString>
-#include <QObject>
+//#include <QString>
+//#include <QThread>
 
 class Fastboot : public QProcess
 {
@@ -20,34 +20,44 @@ public:
 
     enum FastbootError {
         NoError,
+        FailedToStart,  //命令未开始，未找到 fastboot 指令
+        UnknownCommand, //未知的 fastboot 命令
+        Timedout,       //命令执行超时
         UnknownError,   //未知错误
     };
     Q_ENUM(FastbootError)
-
     Fastboot(QProcess *parent = nullptr);
     ~Fastboot();
 
-    void searchDevice(void);
+    bool isExecutable(void);
+    const QStringList &searchDevice(void);
     void fsatbootReboot(void);
-    bool isRunning(void);
-    void flashDownload(Fastboot::FastbootCDM, QString &);
-    Fastboot::FastbootError fsatbootError(void);
+    void fsatbootReboot(const QString &device);
+    void flashBootDownload(const QString &device, const QString &filename = QString("boot.img"));
 
-private slots:
-    void on_finished(int exitCode, QProcess::ExitStatus exitStatus);
-    void on_readyReadStandardOutput();
-    void on_readyReadStandardError();
+
+    void flashDownload(Fastboot::FastbootCDM, QString filename = QString("boot.img"));
+
+    Fastboot::FastbootError fsatbootError(void);
+//    Fastboot::FastbootCDM getProgram(void);
+//    void setProgram(Fastboot::FastbootCDM);
+
+    void fastbootStart(void);
+    void fastbootStart(Fastboot::FastbootCDM);
 
 private:
     QString     executionPath;      /*!< fsatboot.exe 程序执行路径 */
-    bool        isFastRunning;      /*!< fsatboot 进程是否正在执行 */
-    FastbootCDM ststus;
-    QStringList devicesList;        /*!< fsatboot 设备列表 */
+    QStringList devicesList ;        /*!< fsatboot 设备列表 */
     FastbootError fasterror;
 
+    void fastbootDebug(void);
+    void errorAnalysis(void);
 
-signals:
-    void fastbootFinished(int exitCode, QProcess::ExitStatus exitStatus);
+    int exitCode;
+    QProcess::ExitStatus exitStatus;
+    QString readAllOutput;
+    QString readAllError;
+
 };
 
 #endif // FASTBOOT_H

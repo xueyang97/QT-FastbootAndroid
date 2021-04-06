@@ -3,31 +3,22 @@
 #include <QDebug>
 #include <QDir>
 
-AndroidDebugBridge::AndroidDebugBridge(QObject *parent) : QProcess(parent)
+AndroidDebugBridge::AndroidDebugBridge(QProcess *parent) : QProcess(parent)
 {
-    adbcmd = new QProcess(nullptr);
-    executionPath = QDir::currentPath() + "/ADB";  /* 工作目录+ADB */
-    adbcmd->setProgram(executionPath + "/adb.exe");
+    executionPath = QDir::currentPath() + "/ADB/";  /* 工作目录+ADB */
+    setWorkingDirectory(executionPath);
     devicesList = QStringList();
-
-    connect(adbcmd,SIGNAL(finished(int,QProcess::ExitStatus)), this,SLOT(on_finshed(int,QProcess::ExitStatus)));
     adberror = UnknownError;
-    ststus = NoCommand;
 }
 AndroidDebugBridge::~AndroidDebugBridge()
 {
-    delete adbcmd;
 }
-
-
-
-
 
 /**
  * @brief AndroidDebugBridge::path 获取ADB命令执行的绝对路径
  * @return ADB命令执行的绝对路径
  */
-QString AndroidDebugBridge::path(void)
+const QString &AndroidDebugBridge::path(void)
 {
     return executionPath;
 }
@@ -36,51 +27,57 @@ QString AndroidDebugBridge::path(void)
  * @brief AndroidDebugBridge::setPath 设置ADB命令执行的绝对路径
  * @param path ADB命令执行的绝对路径
  */
-void AndroidDebugBridge::setPath(QString &path)
+void AndroidDebugBridge::setPath(const QString &path)
 {
     executionPath = path;
-    adbcmd->setProgram(executionPath + "/adb.exe");
-//    adbcmd->setWorkingDirectory(executionPath);
+    setWorkingDirectory(executionPath);
 }
 
 /**
- * @brief AndroidDebugBridge::isAdbRun 测试adb命令是否可以被执行
+ * @brief AndroidDebugBridge::isExecutable 测试adb命令是否可以被执行
  * @return true/false 错误代码在error中返回
  */
-bool AndroidDebugBridge::isAdbRun()
+bool AndroidDebugBridge::isExecutable()
 {
-    adbcmd->setArguments(QStringList() << "version");
-    ststus = Version;
-    adbcmd->start();
-    adbcmd->waitForStarted();
-    adbcmd->waitForFinished();
-    // adbError = (AndroidDebugBridge::ADBError)adbcmd->error();
-    if (adbcmd->error() != QProcess::UnknownError) {
-        return false;
+    setProgram(executionPath + "adb_executable.cmd");
+    setArguments(QStringList());
+    start();
+    waitForStarted();
+    waitForFinished(1000);
+
+    adbDebug();
+    errorAnalysis();
+
+    if (adberror != AndroidDebugBridge::FailedToStart) {
+        return true;
     }
-    return true;
+    return false;
 }
 
 /**
- * @brief AndroidDebugBridge::searchDevice 搜索ADB设备，为了防止搜索过程中出现阻塞，使用信号槽更新设备列表
+ * @brief AndroidDebugBridge::searchDevice 搜索ADB设备
  */
-void AndroidDebugBridge::searchDevice(void)
+const QStringList &AndroidDebugBridge::searchDevice(void)
 {
-    adbcmd->setArguments(QStringList() << "devices");
-    ststus = SearchDevice;
-    adbcmd->start();
-}
+    setProgram(executionPath + "adb_devices.cmd");
+    setArguments(QStringList());
+    start();
+    waitForStarted();
+    waitForFinished(20000);
 
-/**
- * @brief AndroidDebugBridge::waitSearchDeviceFinshed
- *        使用阻塞等待的方式搜索ADB设备 阻塞等待方式可以直接获取设备列表
- */
-QStringList AndroidDebugBridge::waitSearchDevice(void)
-{
-    adbcmd->setArguments(QStringList() << "devices");
-    ststus = SearchDevice;
-    adbcmd->start();
-    adbcmd->waitForFinished();
+    adbDebug();
+    errorAnalysis();
+
+    devicesList.clear();
+    if (adberror == AndroidDebugBridge::NoError) {
+        QStringList listTemp = QString(readAllOutput).split("\r\n");
+        for (int i = 0; i < listTemp.length(); i++ ) {
+            if (listTemp.at(i).indexOf("\tdevice") >= 0) {
+                devicesList.append(listTemp[i].remove("\tdevice"));
+            }
+        }
+    }
+
     return devicesList;
 }
 
@@ -90,7 +87,7 @@ QStringList AndroidDebugBridge::waitSearchDevice(void)
  *      注意：返回的设备列表是上一次搜索完成后的列表，
  *           如果需要最新的设备列表，请重新搜索设备列表
  */
-QStringList AndroidDebugBridge::getDevicesList(void)
+const QStringList &AndroidDebugBridge::getDevicesList(void)
 {
     return devicesList;
 }
@@ -100,57 +97,46 @@ QStringList AndroidDebugBridge::getDevicesList(void)
  * @param device 设备号
  * @return true/false
  */
-bool AndroidDebugBridge::entryBootloader(QString device)
+void AndroidDebugBridge::entryBootloader(const QString &device)
 {
-    QStringList Arguments = QStringList();
-    Arguments.clear();
-    Arguments << "-s" << device << "reboot" << "bootloader";
-    adbcmd->setArguments(Arguments);
-    ststus = RebootBootloader;
-    adbcmd->start();
-    return true;
+    setProgram(executionPath + "adb_reboot_bootloader.cmd");
+    setArguments(QStringList() << device);
+    start();
+    waitForStarted();
+    waitForFinished(20000);
+
+    adbDebug();
+    errorAnalysis();
 }
 
-/**
- * @brief AndroidDebugBridge::on_finshed
- */
-void AndroidDebugBridge::on_finshed(int exitCode, QProcess::ExitStatus exitStatus)
+void AndroidDebugBridge::errorAnalysis(void)
 {
-    QString readAllOutput = adbcmd->readAllStandardOutput();
-    QString readAllError  = adbcmd->readAllStandardError();
-    adberror = NoError;
-    QStringList argum = adbcmd->arguments();
-
-    if (readAllError.indexOf("error: cannot connect to daemon") != -1) {
-        adberror = DaemonError;
-        goto out;
+    if ((error() == QProcess::UnknownError) && (exitCode == 0) && (exitStatus == QProcess::NormalExit)) {
+        adberror = AndroidDebugBridge::NoError;
+    } else if (error() == QProcess::Timedout) {
+        adberror = AndroidDebugBridge::Timedout;
+    } else if (error() == QProcess::FailedToStart) {
+        adberror = AndroidDebugBridge::FailedToStart;
+    } else if (exitCode) {
+        adberror = AndroidDebugBridge::UnknownCommand;
+    } else {
+        adberror = AndroidDebugBridge::UnknownError;
     }
 
-    switch ((int)ststus) {
-    case Version: break;
-    case SearchDevice:
-        devicesList.clear();
-        if ((exitCode == 0) && (exitStatus == QProcess::NormalExit)) {   /* 进程执行成功 */
-            QStringList listTemp = QString(readAllOutput).split("\r\n");
-            for (int i = 0; i < listTemp.length(); i++ ) {
-                if (listTemp.at(i).indexOf("\tdevice") >= 0) {
-                    devicesList.append(listTemp[i].remove("\tdevice"));
-                }
-            }
-        } else {
-            adberror = NotFoundDevices; //未搜寻到设备
-        }
-    break;
-    case RebootBootloader:
-        if (readAllError.indexOf("error") != -1) {
-            adberror = NotFoundDevices;
-        }
-    break;
-    }
+    qDebug() << "adberror = " << adberror << endl << endl;
+}
 
-out:
-    ststus = NoCommand;
-    emit adbFinished(exitCode, exitStatus);
+void AndroidDebugBridge::adbDebug(void)
+{
+    exitCode = QProcess::exitCode();
+    exitStatus = QProcess::exitStatus();
+    readAllOutput = readAllStandardOutput();
+    readAllError  = readAllStandardError();
+    qDebug() << "error = " << error();
+    qDebug() << "exitCode = " << QString::number(exitCode);
+    qDebug() << "exitStatus = " << exitStatus;
+    qDebug() << "readAllOutput = " << readAllOutput;
+    qDebug() << "readAllError = " << readAllError;
 }
 
 AndroidDebugBridge::ADBError AndroidDebugBridge::adbError(void)
