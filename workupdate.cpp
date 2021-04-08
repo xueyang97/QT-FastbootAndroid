@@ -3,18 +3,6 @@
 #include <QMetaEnum>
 #include <QNetworkReply>
 
-QString fastboot_enum2string(int enumration)
-{
-    QMetaEnum metaEnum = QMetaEnum::fromType<Fastboot::FastbootError>();
-    return metaEnum.valueToKey(enumration);
-}
-
-QString adb_enum2string(int enumration)
-{
-    QMetaEnum metaEnum = QMetaEnum::fromType<AndroidDebugBridge::ADBError>();
-    return metaEnum.valueToKey(enumration);
-}
-
 QString printErrorCode(const QString &info, int enumration)
 {
     return info + QString("\t错误代码为 : %1").arg(fastboot_enum2string(enumration)) + "\n";

@@ -1,0 +1,1 @@
+fastboot -s %1 flash boot %2

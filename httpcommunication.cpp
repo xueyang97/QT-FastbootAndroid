@@ -23,17 +23,18 @@ void HttpServer::setUrlSpec(const QString &urName)
 void HttpServer::run(void)
 {
     QFile downloadFile;
+    downloadFile.setFileName(qurl.fileName());
 
     networkError = QNetworkReply::NoError;
     httpDownload(qurl);
     this->exec();
     if (networkError != QNetworkReply::NoError) {
+        downloadFile.remove();
         qDebug() << networkError;
         return;
     }
 
     logFile.open(QIODevice::ReadOnly);
-    downloadFile.setFileName(qurl.fileName());
     downloadFile.open(QIODevice::Append);
     downloadFile.write(logFile.readAll());
     downloadFile.close();
@@ -54,7 +55,6 @@ void HttpServer::httpDownload(const QUrl &urlSpec)
     file->remove();
     if (!file->open(QIODevice::WriteOnly)) {
         delete file;
-        emit downloadFinished();
         return;
     }
 
@@ -88,15 +88,6 @@ void HttpServer::httpUpload(const QUrl &urlSpec) //http://localhost/phpbin/uploa
     // connect(reply,SIGNAL(uploadProgress(qint64,qint64)),this,SLOT(on_uploadProgress(qint64,qint64)));
     // connect(reply,SIGNAL(error(QNetworkReply::NetworkError)),this,SLOT(on_error(QNetworkReply::NetworkError)));
 }
-
-//void HttpServer::waitDownloadFinished(void)
-//{
-//    while(isDownloadRunning);
-//}
-//void HttpServer::waitUploadFinished(void)
-//{
-//    while(isUploadRunning);
-//}
 
 QNetworkReply::NetworkError HttpServer::error(void)
 {
@@ -132,8 +123,6 @@ void HttpServer::on_uploadFinished()
     reply->deleteLater();
     delete accessManagerUpload;
     accessManagerUpload = 0;
-//    isUploadRunning = false;
-//    emit uploadFinished();
     quit();
 }
 

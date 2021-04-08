@@ -4,7 +4,15 @@
 #include <QCloseEvent>
 void MainWindow::closeEvent( QCloseEvent *event )
 {
-    event->accept();
+    if (workUpdate->isRunning())    {   /* 升级程序正在进行 */
+        QMessageBox::information(this,"警告","正在进行升级程序");
+        event->ignore();
+    } else if (http->isRunning()) {
+        QMessageBox::information(this,"警告","结果正在上传服务器");
+    } else {
+        event->accept();
+    }
+
 }
 
 QStringList searchFileName(const QString &folderPath, const QString &files)
@@ -47,17 +55,12 @@ MainWindow::MainWindow(QWidget *parent)
     userdataFilename = QStringList();
     DDRFilename      = QStringList();
     splashFilename   = QStringList();
-    // http->httpDownload("http://localhost/phpbin/upload", "123.jpg");
-    // http->httpUpload("345.txt", "http://localhost/phpbin/upload");
 
     /* 新建日志文件夹 */
     QDir dir;
     if(!dir.exists("log")) {
         dir.mkdir("log");
     }
-
-    // server = new ServerUpload(0);
-
 }
 
 MainWindow::~MainWindow()
@@ -112,7 +115,7 @@ void MainWindow::on_httpFinished(void)
     if (http->error() == QNetworkReply::NoError) {
         ui_editShowInfo("服务器上送成功\n");
     } else {
-        ui_editShowInfo("服务器上送失败\n");
+        ui_editShowInfo(QString("服务器上送失败 错误代码 : %1\n").arg(http_enum2string(http->error())));
     }
 
     if (workUpdate->isSuccess()) {
@@ -339,6 +342,18 @@ void MainWindow::on_comboBoxFastbootMode_currentIndexChanged(int)
         ui->checkBoxUserdata->setChecked(false);
         ui->checkBoxUserdata->setChecked(false);
         ui->checkBoxRecovery->setChecked(false);
+    } else if (ui->comboBoxFastbootMode->currentText() == QString("Android Mode")) {
+        ui->checkBoxAboot->   setChecked(true);
+        ui->checkBoxBoot->    setChecked(true);
+        ui->checkBoxCache->   setChecked(true);
+        ui->checkBoxDDR->     setChecked(true);
+        ui->checkBoxPersist-> setChecked(true);
+        // ui->checkBoxReboot->  setEnabled(true);
+        ui->checkBoxSplash->  setChecked(true);
+        ui->checkBoxSystem->  setChecked(true);
+        ui->checkBoxUserdata->setChecked(true);
+        ui->checkBoxUserdata->setChecked(true);
+        ui->checkBoxRecovery->setChecked(true);
     }
 }
 

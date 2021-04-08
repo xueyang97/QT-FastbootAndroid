@@ -1,0 +1,1 @@
+adb -s %1 reboot bootloader

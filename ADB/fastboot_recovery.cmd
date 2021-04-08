@@ -1,0 +1,1 @@
+fastboot -s %1 flash recovery %2
