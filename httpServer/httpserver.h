@@ -13,6 +13,7 @@ class httpServer : public QObject
 public:
     explicit httpServer(QObject *parent = nullptr);
     void httpDownloader(const QUrl &url, const QFile &download);
+    void httpUploader(const QUrl &url, const QFile &upload, const QString &php);
 
 private slots:
     void on_dataAvailable(void);

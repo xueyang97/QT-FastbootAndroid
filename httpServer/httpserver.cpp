@@ -20,8 +20,7 @@ void httpServer::httpDownloader(const QUrl &url, const QFile &download)
     if (downloadFile->isOpen()) {    /* 如果文件已经被打开 先关闭文件 */
         downloadFile->close();
     }
-    downloadFile->remove();
-    downloadFile->open(QIODevice::WriteOnly);
+    downloadFile->open(QIODevice::WriteOnly | QIODevice::Truncate);
 
     downloadFinished = false;
 
@@ -33,7 +32,6 @@ void httpServer::httpDownloader(const QUrl &url, const QFile &download)
     connect(_reply, SIGNAL(readyRead()), this, SLOT(on_dataAvailable()));
     connect(_reply, SIGNAL(finished()),  this, SLOT(on_downloadfinished()));
 //    connect(reply,SIGNAL(downloadProgress(qint64,qint64)),this,SLOT(on_downloadProgress(qint64,qint64)));//更新进度条
-//    connect(reply,SIGNAL(error(QNetworkReply::NetworkError)),this,SLOT(on_error(QNetworkReply::NetworkError)));
 }
 void httpServer::on_dataAvailable(void)
 {
@@ -60,4 +58,24 @@ void httpServer::on_downloadfinished(void)
     _request = nullptr;
 
     downloadFinished = true;
+}
+
+
+void httpServer::httpUploader(const QUrl &url, const QFile &upload, const QString &php) //http://localhost/phpbin/upload
+{
+//    QFile  uploadFile(urlSpec.fileName());
+//    uploadFile.open(QIODevice::ReadOnly);
+//    QByteArray byte_file = uploadFile.readAll();
+//    uploadFile.close();
+
+//    accessManagerUpload = new QNetworkAccessManager(this);    //往该目录中上传文件
+//    accessManagerUpload->setNetworkAccessible(QNetworkAccessManager::Accessible);
+//    QUrl url2(urlSpec.adjusted(QUrl::RemoveFilename).toString() + "upload.php?filename=" + urlSpec.fileName());
+//    QNetworkRequest request2(url2);
+//    request2.setHeader(QNetworkRequest::ContentTypeHeader, "application/octet-stream");
+//    reply = accessManagerUpload->post(request2, byte_file);
+
+//    connect(reply,SIGNAL(finished()),this,SLOT(on_uploadFinished()));
+    // connect(reply,SIGNAL(uploadProgress(qint64,qint64)),this,SLOT(on_uploadProgress(qint64,qint64)));
+    // connect(reply,SIGNAL(error(QNetworkReply::NetworkError)),this,SLOT(on_error(QNetworkReply::NetworkError)));
 }
