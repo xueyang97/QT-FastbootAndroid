@@ -26,7 +26,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     logFile = new QFile();
 
-    http = new HttpCommunication();
+    http = new HttpServer(0);
+    connect(http,SIGNAL(finished()),this,SLOT(on_httpFinished()));
 
     workUpdate = new WorkUpdate(0);
     connect(workUpdate,SIGNAL(readyReadStandardOutput()),this,SLOT(on_workReadyReadStandardOutput()));
@@ -55,6 +56,8 @@ MainWindow::MainWindow(QWidget *parent)
         dir.mkdir("log");
     }
 
+    // server = new ServerUpload(0);
+
 }
 
 MainWindow::~MainWindow()
@@ -75,12 +78,6 @@ void MainWindow::on_workReadyReadStandardOutput(void)
 
 void MainWindow::on_workingFinished(void)
 {
-    if (workUpdate->isSuccess()) {
-        QMessageBox::information(this,"提示","设备升级成功");
-    } else {
-        QMessageBox::information(this,"提示","设备升级失败");
-    }
-
     ui->comboBoxDevice->clear();
     ui->comboBoxDevice->addItems(QStringList() << "no device");
     /* 将一些按键使能 */
@@ -88,13 +85,41 @@ void MainWindow::on_workingFinished(void)
     ui->comboBoxDevice->setEnabled(true);
     ui->comboBoxFastbootMode->setEnabled(true);
     ui->pushButtonRun->setEnabled(true);
-
-    // QFile httpLogFile;
-
-    http->httpDownload("http://localhost/phpbin/upload", "fastboot update.log");
-
     /* 关闭日志文件 */
-    // logFile->close();
+    logFile->close();
+
+
+    if (ui->checkBoxIsUser->isChecked()) {
+        QString utlName = QString("%1://%2:%3/%4").arg(ui->comboBoxScheme->currentText(),
+                                                       ui->lineEditHost->text(),
+                                                       ui->lineEditHttpPort->text(),
+                                                       ui->lineEditHttpPath->text());
+        ui_editShowInfo("运行结果上送服务器中...\n");
+        http->setUrlSpec(utlName);
+        http->setUploaderFile(logFile->fileName());
+        http->start();
+    } else {
+        if (workUpdate->isSuccess()) {
+            QMessageBox::information(this,"提示","设备升级成功");
+        } else {
+            QMessageBox::information(this,"提示","设备升级失败");
+        }
+    }
+}
+
+void MainWindow::on_httpFinished(void)
+{
+    if (http->error() == QNetworkReply::NoError) {
+        ui_editShowInfo("服务器上送成功\n");
+    } else {
+        ui_editShowInfo("服务器上送失败\n");
+    }
+
+    if (workUpdate->isSuccess()) {
+        QMessageBox::information(this,"提示","设备升级成功");
+    } else {
+        QMessageBox::information(this,"提示","设备升级失败");
+    }
 }
 
 void MainWindow::on_searchFinished(void)
@@ -113,22 +138,6 @@ void MainWindow::on_searchFinished(void)
         ui->comboBoxDevice->addItems(device);
     }
     ui->pushButton->setEnabled(true);
-}
-
-void MainWindow::httpFinished()
-{
-}
-
-void MainWindow::on_uploadFinished()
-{
-    // QMessageBox::information(this,"提示","文件已上传");
-    // ui->textEditInformation->insertPlainText(QString::fromLocal8Bit(cmd->readAllStandardOutput()));
-    // ui->textEditInformation->insertPlainText(QString::fromLocal8Bit(cmd->readAllStandardError()));
-}
-
-void MainWindow::on_httpError(QNetworkReply::NetworkError networkError, HttpCommunication::HttpError http_error)
-{
-    qDebug() << "networkError : " << QString::number(networkError) << "\nhttpError : " << QString::number(http_error);
 }
 
 
@@ -339,5 +348,20 @@ void MainWindow::on_checkBoxSplash_stateChanged(int arg1)
         ui->comboBoxSplash->setEnabled(true);
     } else {
         ui->comboBoxSplash->setEnabled(false);
+    }
+}
+
+void MainWindow::on_checkBoxIsUser_stateChanged(int arg1)
+{
+    if (arg1) {
+        ui->comboBoxScheme  ->setEnabled(true);
+        ui->lineEditHost    ->setEnabled(true);
+        ui->lineEditHttpPath->setEnabled(true);
+        ui->lineEditHttpPort->setEnabled(true);
+    } else {
+        ui->comboBoxScheme  ->setEnabled(false);
+        ui->lineEditHost    ->setEnabled(false);
+        ui->lineEditHttpPath->setEnabled(false);
+        ui->lineEditHttpPort->setEnabled(false);
     }
 }

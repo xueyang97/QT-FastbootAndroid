@@ -4,10 +4,11 @@
 #include <QObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QThread>
 #include <QFile>
 #include <QDebug>
 
-class HttpCommunication : public QObject
+class HttpServer : public QThread
 {
     Q_OBJECT
 public:
@@ -18,16 +19,22 @@ public:
     };
     Q_ENUM(HttpError)
 
-    HttpCommunication();
-    ~HttpCommunication();
-    void httpDownload(QString urlSpec, QString fileName);
-    void httpUpload(QString fileName, QString urlSpec);
-    void waitDownloadFinished(void);
-    void waitUploadFinished(void);
+    HttpServer(QThread *parent = nullptr);
+    ~HttpServer();
+    void httpDownload(const QUrl &urlSpec);
+    void httpUpload(const QUrl &urlSpec);
+//    void waitDownloadFinished(void);
+//    void waitUploadFinished(void);
     QNetworkReply::NetworkError error(void);
 
+    void setUploaderFile(const QString &fileName);
+    void setUrlSpec(const QString &urName);
+
+protected:
+    void run(void) Q_DECL_OVERRIDE;
+
 private slots :
-    void on_httpReadyRead();
+    void on_readyRead();
     void on_downloadFinished();
     void on_uploadFinished();
     void on_downloadProgress(qint64 progressMaximum, qint64 progressValue);
@@ -35,18 +42,21 @@ private slots :
     void on_error(QNetworkReply::NetworkError networkError);
 
 private:
-//    QNetworkAccessManager *accessManager1;
-//    QNetworkAccessManager *accessManager2;
     QNetworkAccessManager *accessManager;
     QNetworkAccessManager *accessManagerUpload;
+    QNetworkRequest *request;
     QNetworkReply *reply;
     QFile *file;
+
+    QFile logFile;
+    QUrl  qurl;
+    QNetworkReply::NetworkError networkError;
 
     qint64 downloadProgressMaximum;
     qint64 downloadProgressValue;
     qint64 uploadProgressMaximum;
     qint64 uploadProgressValue;
-    QNetworkReply::NetworkError networkError;
+
 
     bool isDownloadRunning;
     bool isUploadRunning;

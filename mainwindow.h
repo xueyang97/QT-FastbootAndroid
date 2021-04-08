@@ -31,13 +31,10 @@ public:
     void closeEvent( QCloseEvent * event );
 
 private slots:
-    void httpFinished();
-    void on_uploadFinished();
-    void on_httpError(QNetworkReply::NetworkError, HttpCommunication::HttpError);
-
     void on_workReadyReadStandardOutput(void);
     void on_workingFinished(void);
     void on_searchFinished(void);
+    void on_httpFinished(void);
 
     void on_textEditInformation_textChanged();
     void on_pushButton_clicked();
@@ -47,9 +44,11 @@ private slots:
 
     void on_checkBoxSplash_stateChanged(int arg1);
 
+    void on_checkBoxIsUser_stateChanged(int arg1);
+
 private:
     Ui::MainWindow      *ui;
-    HttpCommunication   *http;
+    HttpServer          *http;
     WorkUpdate          *workUpdate;
     SearchDevice        *adbDevices;
     QFile               *logFile;

@@ -548,7 +548,7 @@
       <rect>
        <x>140</x>
        <y>40</y>
-       <width>191</width>
+       <width>131</width>
        <height>20</height>
       </rect>
      </property>
@@ -593,9 +593,12 @@
       <rect>
        <x>140</x>
        <y>90</y>
-       <width>191</width>
+       <width>251</width>
        <height>20</height>
       </rect>
+     </property>
+     <property name="text">
+      <string>phpbin/upload/fastboot update.log</string>
      </property>
     </widget>
     <widget class="QLabel" name="labelHttpPath">

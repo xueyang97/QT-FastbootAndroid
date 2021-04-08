@@ -63,7 +63,7 @@ void WorkUpdate::run(void)
     if (adb->adbError() != AndroidDebugBridge::NoError) {
         setStandardOutput(adbPrintErrorCode("adb进入bootloader失败", adb->adbError()));
     } else {
-        setStandardOutput("adb进入bootloader模式成功\n\n");
+        setStandardOutput("adb进入bootloader模式成功\n");
     }
 
     /* 搜索fastboot设备 */
@@ -82,7 +82,7 @@ void WorkUpdate::run(void)
             setStandardOutput(printErrorCode("fastboot升级cache分区失败", fastboot->fastbootError()));
             goto out;
         }
-        setStandardOutput(QString("fastboot升级cache分区成功\n\n"));
+        setStandardOutput(QString("fastboot升级cache分区成功\n"));
     }
 
     /* fast boot升级aboot分区 */
@@ -93,7 +93,7 @@ void WorkUpdate::run(void)
             setStandardOutput(printErrorCode("fastboot升级aboot分区失败", fastboot->fastbootError()));
             goto out;
         }
-        setStandardOutput(QString("fastboot升级aboot分区成功\n\n"));
+        setStandardOutput(QString("fastboot升级aboot分区成功\n"));
     }
 
     /* fast boot升级boot分区 */
@@ -104,7 +104,7 @@ void WorkUpdate::run(void)
             setStandardOutput(printErrorCode("fastboot升级boot分区失败", fastboot->fastbootError()));
             goto out;
         }
-        setStandardOutput(QString("fastboot升级boot分区成功\n\n"));
+        setStandardOutput(QString("fastboot升级boot分区成功\n"));
     }
 
     /* fast boot升级persist分区 */
@@ -115,7 +115,7 @@ void WorkUpdate::run(void)
             setStandardOutput(printErrorCode("fastboot升级persist分区失败", fastboot->fastbootError()));
             goto out;
         }
-        setStandardOutput(QString("fastboot升级persist分区成功\n\n"));
+        setStandardOutput(QString("fastboot升级persist分区成功\n"));
     }
 
     /* fast boot升级Recovery分区 */
@@ -126,7 +126,7 @@ void WorkUpdate::run(void)
             setStandardOutput(printErrorCode("fastboot升级recovery分区失败", fastboot->fastbootError()));
             goto out;
         }
-        setStandardOutput(QString("fastboot升级recovery分区成功\n\n"));
+        setStandardOutput(QString("fastboot升级recovery分区成功\n"));
     }
 
     /* fast boot升级System分区 */
@@ -137,7 +137,7 @@ void WorkUpdate::run(void)
             setStandardOutput(printErrorCode("fastboot升级system分区失败", fastboot->fastbootError()));
             goto out;
         }
-        setStandardOutput(QString("fastboot升级system分区成功\n\n"));
+        setStandardOutput(QString("fastboot升级system分区成功\n"));
     }
 
     /* fast boot升级Userdata分区 */
@@ -148,7 +148,7 @@ void WorkUpdate::run(void)
             setStandardOutput(printErrorCode("fastboot升级userdata分区失败", fastboot->fastbootError()));
             goto out;
         }
-        setStandardOutput(QString("fastboot升级userdata分区成功\n\n"));
+        setStandardOutput(QString("fastboot升级userdata分区成功\n"));
     }
 
     /* fast boot升级DDR分区 */
@@ -159,7 +159,7 @@ void WorkUpdate::run(void)
             setStandardOutput(printErrorCode("fastboot升级DDR分区失败", fastboot->fastbootError()));
             goto out;
         }
-        setStandardOutput(QString("fastboot升级DDR分区成功\n\n"));
+        setStandardOutput(QString("fastboot升级DDR分区成功\n"));
     }
 
     /* fast boot升级splash分区 */
@@ -170,7 +170,7 @@ void WorkUpdate::run(void)
             setStandardOutput(printErrorCode("fastboot升级splash分区失败", fastboot->fastbootError()));
             goto out;
         }
-        setStandardOutput(QString("fastboot升级splash分区成功\n\n"));
+        setStandardOutput(QString("fastboot升级splash分区成功\n"));
     }
 
     /* fast boot重启设备  此命令必须最后执行 */
@@ -181,7 +181,7 @@ void WorkUpdate::run(void)
             setStandardOutput(printErrorCode("fastboot重启设备失败", fastboot->fastbootError()));
             goto out;
         }
-        setStandardOutput(QString("fastboot重启设备成功\n\n"));
+        setStandardOutput(QString("fastboot重启设备成功\n"));
     }
 
     isUpdataSuccess = true;
@@ -199,6 +199,7 @@ out:
         }
         setStandardOutput(QString("fastboot设备已重新启动\n"));
     }
+    setStandardOutput(QString("\n\n"));
 
     delete adb;
     delete fastboot;
@@ -318,38 +319,6 @@ const QStringList &SearchDevice::getDevices(void)
 
 
 
-
-
-
-
-
-ServerUpload::ServerUpload(QThread *parent) : QThread(parent)
-{
-    http = new HttpCommunication();
-    file = new QFile();
-}
-
-void ServerUpload::run(void)
-{
-    http->httpDownload(urlSpec, fileName);
-    http->waitDownloadFinished();
-    msleep(10);
-    if (http->error() != QNetworkReply::NoError) {
-        emit serverUploadFinished((int)http->error());
-        quit();
-    }
-
-
-
-
-    http->httpUpload(fileName,urlSpec);
-    http->waitUploadFinished();
-    msleep(10);
-    if (http->error() != QNetworkReply::NoError) {
-        emit serverUploadFinished((int)http->error());
-        quit();
-    }
-}
 
 
 

@@ -78,20 +78,4 @@ signals:
 };
 
 
-class ServerUpload : public QThread
-{
-    Q_OBJECT
-public:
-    ServerUpload(QThread *parent = nullptr);
-protected:
-    void run(void) Q_DECL_OVERRIDE;
-private:
-    HttpCommunication *http;
-    QFile *file;
-    QString urlSpec;
-    QString fileName;
-signals:
-    void serverUploadFinished(int);
-};
-
 #endif // WORKUPDATE_H
