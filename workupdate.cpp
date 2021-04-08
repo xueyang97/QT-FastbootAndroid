@@ -80,7 +80,7 @@ void WorkUpdate::run(void)
         fastboot->flashCacheDownload(fastbootDevice, cacheFilename);
         if (fastboot->fastbootError() != Fastboot::NoError) {
             setStandardOutput(printErrorCode("fastboot升级cache分区失败", fastboot->fastbootError()));
-            goto out;
+            // goto out;
         }
         setStandardOutput(QString("fastboot升级cache分区成功\n"));
     }
@@ -91,7 +91,7 @@ void WorkUpdate::run(void)
         fastboot->flashAbootDownload(fastbootDevice, abootFilename);
         if (fastboot->fastbootError() != Fastboot::NoError) {
             setStandardOutput(printErrorCode("fastboot升级aboot分区失败", fastboot->fastbootError()));
-            goto out;
+            // goto out;
         }
         setStandardOutput(QString("fastboot升级aboot分区成功\n"));
     }
@@ -102,7 +102,7 @@ void WorkUpdate::run(void)
         fastboot->flashBootDownload(fastbootDevice,bootFilename);
         if (fastboot->fastbootError() != Fastboot::NoError) {
             setStandardOutput(printErrorCode("fastboot升级boot分区失败", fastboot->fastbootError()));
-            goto out;
+            // goto out;
         }
         setStandardOutput(QString("fastboot升级boot分区成功\n"));
     }
@@ -113,7 +113,7 @@ void WorkUpdate::run(void)
         fastboot->flashPersistDownload(fastbootDevice,persistFilename);
         if (fastboot->fastbootError() != Fastboot::NoError) {
             setStandardOutput(printErrorCode("fastboot升级persist分区失败", fastboot->fastbootError()));
-            goto out;
+            // goto out;
         }
         setStandardOutput(QString("fastboot升级persist分区成功\n"));
     }
@@ -124,7 +124,7 @@ void WorkUpdate::run(void)
         fastboot->flashRecoveryDownload(fastbootDevice,recoveryFilename);
         if (fastboot->fastbootError() != Fastboot::NoError) {
             setStandardOutput(printErrorCode("fastboot升级recovery分区失败", fastboot->fastbootError()));
-            goto out;
+            // goto out;
         }
         setStandardOutput(QString("fastboot升级recovery分区成功\n"));
     }
@@ -135,7 +135,7 @@ void WorkUpdate::run(void)
         fastboot->flashSystemDownload(fastbootDevice,systemFilename);
         if (fastboot->fastbootError() != Fastboot::NoError) {
             setStandardOutput(printErrorCode("fastboot升级system分区失败", fastboot->fastbootError()));
-            goto out;
+            // goto out;
         }
         setStandardOutput(QString("fastboot升级system分区成功\n"));
     }
@@ -146,7 +146,7 @@ void WorkUpdate::run(void)
         fastboot->flashUserdataDownload(fastbootDevice,userdataFilename);
         if (fastboot->fastbootError() != Fastboot::NoError) {
             setStandardOutput(printErrorCode("fastboot升级userdata分区失败", fastboot->fastbootError()));
-            goto out;
+            // goto out;
         }
         setStandardOutput(QString("fastboot升级userdata分区成功\n"));
     }
@@ -157,7 +157,7 @@ void WorkUpdate::run(void)
         fastboot->flashDDRDownload(fastbootDevice,DDRFilename);
         if (fastboot->fastbootError() != Fastboot::NoError) {
             setStandardOutput(printErrorCode("fastboot升级DDR分区失败", fastboot->fastbootError()));
-            goto out;
+            // goto out;
         }
         setStandardOutput(QString("fastboot升级DDR分区成功\n"));
     }
@@ -168,7 +168,7 @@ void WorkUpdate::run(void)
         fastboot->flashSplashDownload(fastbootDevice,splashFilename);
         if (fastboot->fastbootError() != Fastboot::NoError) {
             setStandardOutput(printErrorCode("fastboot升级splash分区失败", fastboot->fastbootError()));
-            goto out;
+            // goto out;
         }
         setStandardOutput(QString("fastboot升级splash分区成功\n"));
     }
@@ -179,7 +179,7 @@ void WorkUpdate::run(void)
         fastboot->fsatbootReboot(fastbootDevice);
         if (fastboot->fastbootError() != Fastboot::NoError) {
             setStandardOutput(printErrorCode("fastboot重启设备失败", fastboot->fastbootError()));
-            goto out;
+            // goto out;
         }
         setStandardOutput(QString("fastboot重启设备成功\n"));
     }
@@ -192,12 +192,12 @@ out:
         setStandardOutput(QString("fastboot设备升级成功\n"));
     } else {
         setStandardOutput(QString("fastboot设备升级失败\n"));
-        /* 如果可以搜索到fast boot设备，就将设备重启退出 */
-        fastbootDeviceList = fastboot->searchDevice();
-        if (fastbootDeviceList.isEmpty() != true) {
-            fastboot->fsatbootReboot(fastboot->searchDevice().at(0));
-        }
-        setStandardOutput(QString("fastboot设备已重新启动\n"));
+//        /* 如果可以搜索到fast boot设备，就将设备重启退出 */
+//        fastbootDeviceList = fastboot->searchDevice();
+//        if (fastbootDeviceList.isEmpty() != true) {
+//            fastboot->fsatbootReboot(fastboot->searchDevice().at(0));
+//        }
+//        setStandardOutput(QString("fastboot设备已重新启动\n"));
     }
     setStandardOutput(QString("\n\n"));
 
