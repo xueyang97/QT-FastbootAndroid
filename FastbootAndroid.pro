@@ -15,6 +15,7 @@ SOURCES += \
     AndroidDebugBridge/AndroidDebugBridge.cpp \
     Fastboot/Fastboot.cpp \
     common.cpp \
+    httpServer/httpserver.cpp \
     httpcommunication.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -24,6 +25,7 @@ HEADERS += \
     AndroidDebugBridge/AndroidDebugBridge.h \
     Fastboot/Fastboot.h \
     common.h \
+    httpServer/httpserver.h \
     httpcommunication.h \
     mainwindow.h \
     workupdate.h

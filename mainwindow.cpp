@@ -61,6 +61,10 @@ MainWindow::MainWindow(QWidget *parent)
     if(!dir.exists("log")) {
         dir.mkdir("log");
     }
+
+    https = new httpServer(0);
+    QFile downloadFile("fastboot update.log");
+    https->httpDownloader(QUrl("http://localhost/phpbin/upload/fastboot update.log"),downloadFile);
 }
 
 MainWindow::~MainWindow()
@@ -348,7 +352,6 @@ void MainWindow::on_comboBoxFastbootMode_currentIndexChanged(int)
         ui->checkBoxCache->   setChecked(true);
         ui->checkBoxDDR->     setChecked(true);
         ui->checkBoxPersist-> setChecked(true);
-        // ui->checkBoxReboot->  setEnabled(true);
         ui->checkBoxSplash->  setChecked(true);
         ui->checkBoxSystem->  setChecked(true);
         ui->checkBoxUserdata->setChecked(true);

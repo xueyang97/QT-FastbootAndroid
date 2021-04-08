@@ -13,6 +13,7 @@
 #include "AndroidDebugBridge/AndroidDebugBridge.h"
 #include "Fastboot/Fastboot.h"
 #include "workupdate.h"
+#include "httpServer/httpserver.h"
 #include "common.h"
 
 
@@ -69,6 +70,8 @@ private:
     void ui_editShowClear(void);
     void setFastbootModeCheckBoxEnable(bool enable);
     void setWorkFileName(void);
+
+    httpServer *https;
 };
 
 QStringList searchFileName(const QString &folderPath, const QString &files);
