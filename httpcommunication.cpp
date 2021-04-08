@@ -2,6 +2,8 @@
 
 HttpCommunication::HttpCommunication()
 {
+    isDownloadRunning = false;
+    isUploadRunning = false;
 }
 
 HttpCommunication::~HttpCommunication()
@@ -10,13 +12,17 @@ HttpCommunication::~HttpCommunication()
 
 void HttpCommunication::httpDownload(QString urlSpec, QString fileName)
 {
-    file = new QFile(fileName);
 
+    file = new QFile(fileName);
     file->remove();
     if (!file->open(QIODevice::WriteOnly)) {
-        emit httpError(QNetworkReply::NoError, DownloadFileNotOpen);
+        delete file;
+        emit downloadFinished();
         return;
     }
+
+    isDownloadRunning = true;
+    networkError = QNetworkReply::NoError;
 
     QUrl url(urlSpec + '/' + fileName);
     accessManager = new QNetworkAccessManager(this);
@@ -31,40 +37,46 @@ void HttpCommunication::httpDownload(QString urlSpec, QString fileName)
 
 void HttpCommunication::httpUpload(QString fileName, QString urlSpec) //http://localhost/phpbin/upload
 {
-    file = new QFile(fileName);
-
-    if (!file->open(QIODevice::ReadOnly)) {
+    QFile  uploadFile(fileName);
+    if (!uploadFile.exists()) {
         qDebug() << "上传的文件不存在";
-        emit httpError(QNetworkReply::NoError, UploadFileNotOpen);
+        emit uploadFinished();
+        // emit httpError(QNetworkReply::NoError, UploadFileNotOpen);
         return;
     }
+    uploadFile.open(QIODevice::ReadOnly);
+    QByteArray byte_file = uploadFile.readAll();
+    uploadFile.close();
 
-    QByteArray byte_file = file->readAll();
-    file->flush();
-    file->close();
-    delete file;
-    file  = 0;
+    isUploadRunning = true;
+    networkError = QNetworkReply::NoError;
 
-    accessManager1 = new QNetworkAccessManager(this);  //在服务器上创建目录
-    accessManager1->setNetworkAccessible(QNetworkAccessManager::Accessible);
-    QByteArray data;
-    QUrl url1 = QUrl(urlSpec).resolved(QUrl("createFolder.php"));
-    url1.setQuery(QString("foldername=%1").arg(QUrl(urlSpec).fileName()));
-    QNetworkRequest request1(url1);
-    request1.setHeader(QNetworkRequest::ContentTypeHeader, QLatin1String("application/octet-stream"));
-    accessManager1->post(request1, data);
-
-    accessManager2 = new QNetworkAccessManager(this);    //往该目录中上传文件
-    accessManager2->setNetworkAccessible(QNetworkAccessManager::Accessible);
-    QUrl url2 = QUrl(urlSpec).resolved(QUrl("upload.php"));
-    url2.setQuery(QString("foldername=%1&filename=%2").arg(QUrl(urlSpec).fileName(), fileName));
+    accessManagerUpload = new QNetworkAccessManager(this);    //往该目录中上传文件
+    accessManagerUpload->setNetworkAccessible(QNetworkAccessManager::Accessible);
+    QUrl url2(urlSpec + '/' + "upload.php?filename=" + fileName);
+    // QUrl url2 = QUrl(urlSpec).resolved(QUrl("upload.php"));
+    // url2.setQuery(QString("foldername=%1&filename=%2").arg(QUrl(urlSpec).fileName(), fileName));
     QNetworkRequest request2(url2);
     request2.setHeader(QNetworkRequest::ContentTypeHeader, "application/octet-stream");
-    reply = accessManager2->post(request2, byte_file);
+    reply = accessManagerUpload->post(request2, byte_file);
 
     connect(reply,SIGNAL(finished()),this,SLOT(on_uploadFinished()));
     connect(reply,SIGNAL(uploadProgress(qint64,qint64)),this,SLOT(on_uploadProgress(qint64,qint64)));
     connect(reply,SIGNAL(error(QNetworkReply::NetworkError)),this,SLOT(on_error(QNetworkReply::NetworkError)));
+}
+
+void HttpCommunication::waitDownloadFinished(void)
+{
+    while(isDownloadRunning);
+}
+void HttpCommunication::waitUploadFinished(void)
+{
+    while(isUploadRunning);
+}
+
+QNetworkReply::NetworkError HttpCommunication::error(void)
+{
+    return networkError;
 }
 
 void HttpCommunication::on_httpReadyRead()
@@ -76,8 +88,6 @@ void HttpCommunication::on_httpReadyRead()
 
 void HttpCommunication::on_downloadFinished()
 {
-    qDebug() << "文件下载结束";
-
     file->flush();
     file->close();
     reply->deleteLater();
@@ -85,21 +95,16 @@ void HttpCommunication::on_downloadFinished()
     delete file;
     file  = 0;
     accessManager = 0;
-
+    isDownloadRunning = false;
     emit downloadFinished();
 }
 
 void HttpCommunication::on_uploadFinished()
 {
-    qDebug() << "文件上传完成";
-    qDebug() << QString::number(reply->error());
-
     reply->deleteLater();
-    delete accessManager1;
-    delete accessManager2;
-    accessManager1 = 0;
-    accessManager2 = 0;
-
+    delete accessManagerUpload;
+    accessManagerUpload = 0;
+    isUploadRunning = false;
     emit uploadFinished();
 }
 
@@ -121,16 +126,8 @@ void HttpCommunication::on_uploadProgress(qint64 progressValue, qint64 progressM
 
 void HttpCommunication::on_error(QNetworkReply::NetworkError networkError)
 {
+    this->networkError = networkError;
     qDebug()<<"networkError: "<< QString::number(networkError);
     qDebug()<<"HttpError: "<< QString::number(HttpCommunication::NoError);
-    emit httpError(networkError, HttpCommunication::NoError);
 }
 
-qint64 HttpCommunication::uploadMaximum(void)
-{
-    return uploadProgressMaximum;
-}
-qint64 HttpCommunication::uploadValue(void)
-{
-    return uploadProgressValue;
-}

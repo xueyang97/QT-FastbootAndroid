@@ -7,12 +7,13 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QCoreApplication>
+#include <QDir>
 
 #include "httpcommunication.h"
 #include "AndroidDebugBridge/AndroidDebugBridge.h"
 #include "Fastboot/Fastboot.h"
 #include "workupdate.h"
-#include <QThread>
+#include "common.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -30,31 +31,47 @@ public:
     void closeEvent( QCloseEvent * event );
 
 private slots:
-    void updateDataReadProgress(qint64 a,qint64 b);
-    void updateDataWritedProgress(qint64 a,qint64 b);
     void httpFinished();
     void on_uploadFinished();
     void on_httpError(QNetworkReply::NetworkError, HttpCommunication::HttpError);
 
     void on_workReadyReadStandardOutput(void);
+    void on_workingFinished(void);
+    void on_searchFinished(void);
 
-    void on_pushButtonLoad_clicked();
-    void on_pushButtonExit_clicked();
     void on_textEditInformation_textChanged();
     void on_pushButton_clicked();
     void on_pushButtonRun_clicked();
+    void on_pushButtonFolder_clicked();
+    void on_comboBoxFastbootMode_currentIndexChanged(int);
+
+    void on_checkBoxSplash_stateChanged(int arg1);
 
 private:
-    Ui::MainWindow *ui;
-    HttpCommunication *http;
-    QString fileName;
-
-    AndroidDebugBridge *adb;
-    Fastboot           *fastboot;
-
+    Ui::MainWindow      *ui;
+    HttpCommunication   *http;
     WorkUpdate          *workUpdate;
+    SearchDevice        *adbDevices;
+    QFile               *logFile;
+    QString             folderPath;
+    unsigned int        workMode;
+
+    QStringList cacheFilename    ;
+    QStringList abootFilename    ;
+    QStringList bootFilename     ;
+    QStringList persistFilename  ;
+    QStringList recoveryFilename ;
+    QStringList systemFilename   ;
+    QStringList userdataFilename ;
+    QStringList DDRFilename      ;
+    QStringList splashFilename   ;
 
     void ui_editShowInfo(const QString & info);
     void ui_editShowClear(void);
+    void setFastbootModeCheckBoxEnable(bool enable);
+    void setWorkFileName(void);
 };
+
+QStringList searchFileName(const QString &folderPath, const QString &files);
+
 #endif // MAINWINDOW_H

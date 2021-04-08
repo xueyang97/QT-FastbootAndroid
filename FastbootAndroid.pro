@@ -14,6 +14,7 @@ CONFIG += c++11
 SOURCES += \
     AndroidDebugBridge/AndroidDebugBridge.cpp \
     Fastboot/Fastboot.cpp \
+    common.cpp \
     httpcommunication.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -22,6 +23,7 @@ SOURCES += \
 HEADERS += \
     AndroidDebugBridge/AndroidDebugBridge.h \
     Fastboot/Fastboot.h \
+    common.h \
     httpcommunication.h \
     mainwindow.h \
     workupdate.h

@@ -1,8 +1,6 @@
 ﻿#include "Fastboot/Fastboot.h"
-#include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
-#include <QThread>
 
 Fastboot::Fastboot(QProcess *parent) : QProcess(parent)
 {
@@ -65,13 +63,13 @@ const QStringList &Fastboot::searchDevice(void)
     return devicesList;
 }
 
-void Fastboot::Fastboot::fsatbootReboot(const QString &device)
+void Fastboot::fsatbootReboot(const QString &device)
 {
     setProgram(executionPath + "fastboot_reboot.cmd");
     setArguments(QStringList() << device);
     start();
     waitForStarted();
-    waitForFinished(120000);
+    waitForFinished(FASTBOOT_REBOOT_TIMEDOUT);
 
     fastbootDebug();
     errorAnalysis();
@@ -82,17 +80,107 @@ void Fastboot::Fastboot::fsatbootReboot(const QString &device)
     }
 }
 
+void Fastboot::flashCacheDownload(const QString &device, const QString &filename)
+{
+    setProgram(executionPath + "fastboot_cache.cmd");
+    setArguments(QStringList() << device << filename);
+    start();
+    waitForStarted();
+    waitForFinished(FASTBOOT_CACHE_TIMEDOUT);
+
+    fastbootDebug();
+    errorAnalysis();
+}
+void Fastboot::flashAbootDownload(const QString &device, const QString &filename)
+{
+    setProgram(executionPath + "fastboot_aboot.cmd");
+    setArguments(QStringList() << device << filename);
+    start();
+    waitForStarted();
+    waitForFinished(FASTBOOT_ABOOT_TIMEDOUT);
+
+    fastbootDebug();
+    errorAnalysis();
+}
 void Fastboot::flashBootDownload(const QString &device, const QString &filename)
 {
     setProgram(executionPath + "fastboot_boot.cmd");
     setArguments(QStringList() << device << filename);
     start();
     waitForStarted();
-    waitForFinished(30000);
+    waitForFinished(FASTBOOT_BOOT_TIMEDOUT);
 
     fastbootDebug();
     errorAnalysis();
 }
+void Fastboot::flashPersistDownload(const QString &device, const QString &filename)
+{
+    setProgram(executionPath + "fastboot_persist.cmd");
+    setArguments(QStringList() << device << filename);
+    start();
+    waitForStarted();
+    waitForFinished(FASTBOOT_PERSIST_TIMEDOUT);
+
+    fastbootDebug();
+    errorAnalysis();
+}
+void Fastboot::flashRecoveryDownload(const QString &device, const QString &filename)
+{
+    setProgram(executionPath + "fastboot_recovery.cmd");
+    setArguments(QStringList() << device << filename);
+    start();
+    waitForStarted();
+    waitForFinished(FASTBOOT_RECOVERY_TIMEDOUT);
+
+    fastbootDebug();
+    errorAnalysis();
+}
+void Fastboot::flashSystemDownload(const QString &device, const QString &filename)
+{
+    setProgram(executionPath + "fastboot_system.cmd");
+    setArguments(QStringList() << device << filename);
+    start();
+    waitForStarted();
+    waitForFinished(FASTBOOT_SYSTEM_TIMEDOUT);
+
+    fastbootDebug();
+    errorAnalysis();
+}
+void Fastboot::flashUserdataDownload(const QString &device, const QString &filename)
+{
+    setProgram(executionPath + "fastboot_userdata.cmd");
+    setArguments(QStringList() << device << filename);
+    start();
+    waitForStarted();
+    waitForFinished(FASTBOOT_USERDATA_TIMEDOUT);
+
+    fastbootDebug();
+    errorAnalysis();
+}
+void Fastboot::flashDDRDownload(const QString &device, const QString &filename)
+{
+    setProgram(executionPath + "fastboot_ddr.cmd");
+    setArguments(QStringList() << device << filename);
+    start();
+    waitForStarted();
+    waitForFinished(FASTBOOT_DDR_TIMEDOUT);
+
+    fastbootDebug();
+    errorAnalysis();
+}
+void Fastboot::flashSplashDownload(const QString &device, const QString &filename)
+{
+    setProgram(executionPath + "fastboot_splash.cmd");
+    setArguments(QStringList() << device << filename);
+    start();
+    waitForStarted();
+    waitForFinished(FASTBOOT_DDR_TIMEDOUT);
+
+    fastbootDebug();
+    errorAnalysis();
+}
+
+
 
 /**
  * @brief Fastboot::errorAnalysis fastboot 错误分析处理
@@ -125,80 +213,12 @@ void Fastboot::fastbootDebug(void)
     qDebug() << "readAllError = " << readAllError << endl << endl;
 }
 
-void Fastboot::flashDownload(Fastboot::FastbootCDM flash, QString filename)
-{
-//    if (!isFastRunning) {
-//        isFastRunning = true;
-//        switch ((int)flash) {
-//        case FlashBoot:
-//            ststus = FlashBoot;
-//            setArguments(QStringList() << "boot" << "E:\\Android\\SW_8953_android9_V01_20210120_HbSdk_factory\\SW_8953_android9_V01_20210120_HbSdk_factory\\boot.img");
-//        break;
-//        default: isFastRunning = false; qDebug() << "不支持 fastboot flash 命令"; return;
-//        }
-//        QProcess::start();
-//    } else {
-//        qDebug() << "fastboot 程序正在运行";
-//    }
-}
-
-//void Fastboot::on_finished()
-//{
-//    emit fastbootFinished(0,0);
-//    QString readAllOutput = readAllStandardOutput();
-//    QString readAllError  = readAllStandardError();
-//    QStringList argum = arguments();
-
-//    switch ((int)ststus) {
-//    case SearchDevice: break;
-//    case FsatbootReboot:
-//        qDebug() << readAllOutput << readAllError << endl;
-//        if (readAllOutput.indexOf("Finished")) {
-//            fasterror = NoError;
-//        } else {
-//            fasterror = UnknownError;
-//        }
-//    break;
-//    case FlashBoot:
-//        qDebug() << readAllOutput << readAllError << endl;
-//        if (readAllError.indexOf("error") != -1) {
-//            fasterror = UnknownError;
-//        } else {
-//            fasterror = NoError;
-//        }
-//    break;
-//    }
-
-//    isFastRunning = false;
-//    // ststus = NoCommand;
-//    emit fastbootFinished(exitCode,exitStatus);
-//}
-
-
-//bool Fastboot::isRunning(void)
-//{
-//    return isFastRunning;
-//}
-
-Fastboot::FastbootError Fastboot::fsatbootError(void)
+/**
+ * @brief Fastboot::fsatbootError
+ * @return 返回fastboot命令错误信息
+ */
+Fastboot::FastbootError Fastboot::fastbootError(void)
 {
     return fasterror;
 }
 
-/**
- * @brief Fastboot::getProgram
- * @return 返回上一次执行的命令
- */
-//Fastboot::FastbootCDM Fastboot::getProgram(void)
-//{
-//    return status;
-//}
-
-/**
- * @brief Fastboot::getProgram
- * @return 设置需要执行的命令
- */
-//void Fastboot::setProgram(Fastboot::FastbootCDM cmd)
-//{
-//    status = cmd;
-//}
